@@ -6,11 +6,11 @@ Create a set of commands that can be send to any receipt printer that supports E
 
 First, install the package using npm:
 
-    npm install esc-pos-encoder --save
+    npm install @waymen/esc-pos-encoder --save
 
 Then, require the package and use it like so:
 
-    let EscPosEncoder = require('esc-pos-encoder');
+    import { default as EscPosEncoder } from '@waymen/esc-pos-encoder'
 
     let encoder = new EscPosEncoder();
 

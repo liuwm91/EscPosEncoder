@@ -664,6 +664,107 @@ export default class EscPosEncoder {
     }
 
     /**
+     * Change text alignment
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     * @param columns
+     * @param data
+     */
+    table(columns, data): EscPosEncoder {
+      for (let r = 0; r < data.length; r++) {
+        const lines = [];
+        let maxLines = 0;
+
+        for (let c = 0; c < columns.length; c++) {
+          const cell = [];
+
+          if (typeof data[r][c] === 'string') {
+            const w = linewrap(columns[c].width, {lineBreak: '\n'});
+            const fragments = w(data[r][c]).split('\n');
+
+            for (let f = 0; f < fragments.length; f++) {
+              if (columns[c].align == 'right') {
+                cell[f] = this._encode(fragments[f].padStart(columns[c].width));
+              } else {
+                cell[f] = this._encode(fragments[f].padEnd(columns[c].width));
+              }
+            }
+          }
+
+          // if (typeof data[r][c] === 'function') {
+          //   const columnEncoder = new EscPosEncoder(Object.assign({}, this._options, {
+          //     width: columns[c].width,
+          //     embedded: true,
+          //   }));
+
+          //   columnEncoder._codepage = this._codepage;
+          //   columnEncoder.align(columns[c].align);
+          //   data[r][c](columnEncoder);
+          //   const encoded = columnEncoder.encode();
+
+          //   let fragment = [];
+
+          //   for (let e = 0; e < encoded.byteLength; e++) {
+          //     if (e < encoded.byteLength - 1) {
+          //       if (encoded[e] === 0x0a && encoded[e + 1] === 0x0d) {
+          //         cell.push(fragment);
+          //         fragment = [];
+
+          //         e++;
+          //         continue;
+          //       }
+          //     }
+
+          //     fragment.push(encoded[e]);
+          //   }
+
+          //   if (fragment.length) {
+          //     cell.push(fragment);
+          //   }
+          // }
+
+          maxLines = Math.max(maxLines, cell.length);
+          lines[c] = cell;
+        }
+
+        for (let c = 0; c < columns.length; c++) {
+          if (lines[c].length < maxLines) {
+            for (let p = lines[c].length; p < maxLines; p++) {
+              let verticalAlign = 'top';
+              if (typeof columns[c].verticalAlign !== 'undefined') {
+                verticalAlign = columns[c].verticalAlign;
+              }
+
+              if (verticalAlign == 'bottom') {
+                lines[c].unshift((new Array(columns[c].width)).fill(0x20));
+              } else {
+                lines[c].push((new Array(columns[c].width)).fill(0x20));
+              }
+            }
+          }
+        }
+
+        for (let l = 0; l < maxLines; l++) {
+          for (let c = 0; c < columns.length; c++) {
+            if (typeof columns[c].marginLeft !== 'undefined') {
+              this.raw((new Array(columns[c].marginLeft)).fill(0x20));
+            }
+
+            this.raw(lines[c][l]);
+
+            if (typeof columns[c].marginRight !== 'undefined') {
+              this.raw((new Array(columns[c].marginRight)).fill(0x20));
+            }
+          }
+
+          this.newline();
+        }
+      }
+
+      return this;
+    }
+
+    /**
      * Barcode
      *
      * @param  {string}           value  the value of the barcode

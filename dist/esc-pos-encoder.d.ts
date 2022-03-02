@@ -238,6 +238,14 @@ export default class EscPosEncoder {
      */
     align(value: string): EscPosEncoder;
     /**
+     * Change text alignment
+     *
+     * @returns {EscPosEncoder}                  Return the EscPosEncoder, for easy chaining commands
+     * @param columns
+     * @param data
+     */
+    table(columns: any, data: any): EscPosEncoder;
+    /**
      * Barcode
      *
      * @param  {string}           value  the value of the barcode
